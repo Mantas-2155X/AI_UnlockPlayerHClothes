@@ -12,4 +12,3 @@ As a female during H, you can now change your clothes state, instead of being lo
 **To-Do:**  
 * Add male coordinate card selection  
 * Add support for 3p  
-* Add support for accs  
