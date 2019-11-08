@@ -14,7 +14,7 @@ using Manager;
 using JetBrains.Annotations;
 
 namespace AI_UnlockPlayerHClothes {
-    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.1.0")]
+    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.2.0")]
     public class AI_UnlockPlayerHClothes : BaseUnityPlugin
     {
         private static HScene hScene;
@@ -111,11 +111,13 @@ namespace AI_UnlockPlayerHClothes {
 
             if(manager != null && manager.Player != null)
                 player = manager.Player.ChaControl;
-     
-            player.SetClothesState(7, (byte) (!Manager.Config.HData.Shoes ? 2 : 0), true);
-            
+
+            var hData = Manager.Config.HData;
             foreach (var kind in clothesKindList.Where(kind => player.IsClothesStateKind(kind)))
-                player.SetClothesState(kind, (byte)(Manager.Config.HData.Cloth ? 0 : 2), true);
+                player.SetClothesState(kind, (byte)(hData.Cloth ? 0 : 2), true);
+            
+            player.SetAccessoryStateAll(hData.Accessory);
+            player.SetClothesState(7, (byte)(!hData.Shoes ? 2 : 0), true);
         }
         
         [HarmonyTranspiler, HarmonyPatch(typeof(HScene), "LateUpdate")][UsedImplicitly]
@@ -134,11 +136,11 @@ namespace AI_UnlockPlayerHClothes {
             il[index - 1].opcode = OpCodes.Nop;
             il[index].opcode = OpCodes.Ldc_I4_0;
 
-            // Disable forcing shoe state //
+            // Disable forcing accessory & shoe state //
             index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "SetAccessoryStateAll");
             if (index <= 0) return il;
             
-            for (int i = 1; i < 15; i++)
+            for (int i = -6; i < 21; i++)
                 il[index + i].opcode = OpCodes.Nop;
 
             return il;
