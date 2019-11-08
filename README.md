@@ -10,4 +10,5 @@ As a female during H, you can now change your clothes state, instead of being lo
 * Drop `AI_UnlockPlayerHClothes.dll` in `BepInEx/plugins/`  
 
 **To-Do:**  
-* Add male clothes state control in the native menu. (hard coded, maybe later..)  
+* Add male coordinate card selection  
+* Add support for 3p  
