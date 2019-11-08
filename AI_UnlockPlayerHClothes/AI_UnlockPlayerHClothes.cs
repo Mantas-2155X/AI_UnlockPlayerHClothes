@@ -14,7 +14,7 @@ using Manager;
 using JetBrains.Annotations;
 
 namespace AI_UnlockPlayerHClothes {
-    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.2.0")]
+    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.2.1")]
     public class AI_UnlockPlayerHClothes : BaseUnityPlugin
     {
         private static HScene hScene;
@@ -29,7 +29,10 @@ namespace AI_UnlockPlayerHClothes {
         {
             var females = hScene.GetFemales();
             
-            if (females[1] != null || manager == null || manager.Player == null || manager.Player.ChaControl.sex != 0)
+            if (females[1] != null || manager == null || manager.Player == null)
+                return females;
+
+            if (manager.Player.ChaControl.sex == 1 && !manager.bFutanari)
                 return females;
             
             ChaControl[] newFemales = new ChaControl[2]
