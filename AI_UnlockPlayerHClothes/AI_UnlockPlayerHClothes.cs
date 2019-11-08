@@ -140,7 +140,7 @@ namespace AI_UnlockPlayerHClothes {
             index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "SetAccessoryStateAll");
             if (index <= 0) return il;
             
-            for (int i = -6; i < 21; i++)
+            for (int i = -6; i < 22; i++)
                 il[index + i].opcode = OpCodes.Nop;
 
             return il;
