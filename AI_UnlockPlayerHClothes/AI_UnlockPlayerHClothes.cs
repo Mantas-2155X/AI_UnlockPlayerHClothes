@@ -135,12 +135,16 @@ namespace AI_UnlockPlayerHClothes {
             il[index - 2].opcode = OpCodes.Nop;
             il[index - 1].opcode = OpCodes.Nop;
             il[index].opcode = OpCodes.Ldc_I4_0;
-
-            // Disable forcing accessory & shoe state //
+            
             index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "SetAccessoryStateAll");
             if (index <= 0) return il;
             
-            for (int i = -6; i < 22; i++)
+            // Disable forcing accessory state //
+            for (int i = 0; i < 7; i++)
+                il[index - i].opcode = OpCodes.Nop;
+            
+            // Disable forcing shoe state //
+            for (int i = 1; i < 15; i++)
                 il[index + i].opcode = OpCodes.Nop;
 
             return il;
