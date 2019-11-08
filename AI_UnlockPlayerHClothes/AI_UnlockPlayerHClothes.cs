@@ -14,21 +14,101 @@ using Manager;
 using JetBrains.Annotations;
 
 namespace AI_UnlockPlayerHClothes {
-    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.0.0")]
+    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.1.0")]
     public class AI_UnlockPlayerHClothes : BaseUnityPlugin
     {
-        private static ChaControl player;
+        private static HScene hScene;
+        private static HSceneManager manager;
         
+        private static ChaControl player;
         private static readonly List<int> clothesKindList = new List<int>{0, 2, 1, 3, 5, 6};
         
         private void Awake() => HarmonyWrapper.PatchAll(typeof(AI_UnlockPlayerHClothes));
 
+        private static ChaControl[] newGetFemales()
+        {
+            var females = hScene.GetFemales();
+            
+            if (females[1] != null || manager == null || manager.Player == null || manager.Player.ChaControl.sex != 0)
+                return females;
+            
+            ChaControl[] newFemales = new ChaControl[2]
+            {
+                females[0],
+                manager.Player.ChaControl
+            };
+            
+            return newFemales;
+        }
+
+        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSpriteChaChoice), "Init")][UsedImplicitly]
+        public static IEnumerable<CodeInstruction> HSceneSpriteChaChoice_Init_RedirectGetFemales(IEnumerable<CodeInstruction> instructions)
+        {
+            var il = instructions.ToList();
+            
+            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "GetFemales");
+            if (index <= 0) return il;
+
+            il[index - 2].opcode = OpCodes.Nop;
+            il[index - 1].opcode = OpCodes.Nop;
+            il[index] = new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AI_UnlockPlayerHClothes), nameof(newGetFemales)));
+            
+            return il;
+        }
+        
+        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSpriteAccessoryCondition), "Init")][UsedImplicitly]
+        public static IEnumerable<CodeInstruction> HSceneSpriteAccessoryCondition_Init_RedirectGetFemales(IEnumerable<CodeInstruction> instructions)
+        {
+            var il = instructions.ToList();
+            
+            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "GetFemales");
+            if (index <= 0) return il;
+
+            il[index - 2].opcode = OpCodes.Nop;
+            il[index - 1].opcode = OpCodes.Nop;
+            il[index] = new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AI_UnlockPlayerHClothes), nameof(newGetFemales)));
+            
+            return il;
+        }
+        
+        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSpriteClothCondition), "Init")][UsedImplicitly]
+        public static IEnumerable<CodeInstruction> HSceneSpriteClothCondition_Init_RedirectGetFemales(IEnumerable<CodeInstruction> instructions)
+        {
+            var il = instructions.ToList();
+            
+            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "GetFemales");
+            if (index <= 0) return il;
+
+            il[index - 2].opcode = OpCodes.Nop;
+            il[index - 1].opcode = OpCodes.Nop;
+            il[index] = new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AI_UnlockPlayerHClothes), nameof(newGetFemales)));
+            
+            return il;
+        }
+        
+        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSpriteCoordinatesCard), "Init")][UsedImplicitly]
+        public static IEnumerable<CodeInstruction> HSceneSpriteCoordinatesCard_Init_RedirectGetFemales(IEnumerable<CodeInstruction> instructions)
+        {
+            var il = instructions.ToList();
+            
+            var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "GetFemales");
+            if (index <= 0) return il;
+
+            il[index - 2].opcode = OpCodes.Nop;
+            il[index - 1].opcode = OpCodes.Nop;
+            il[index] = new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(AI_UnlockPlayerHClothes), nameof(newGetFemales)));
+            
+            return il;
+        }
+        
         [HarmonyPostfix, HarmonyPatch(typeof(HScene), "SetStartVoice")][UsedImplicitly]
         public static void HScene_SetStartVoice_ApplyClothesConfig(HScene __instance)
         {
-            var traverse = Traverse.Create(__instance);
-            var manager = traverse.Field("hSceneManager").GetValue<HSceneManager>();
+            hScene = __instance;
             
+            var traverse = Traverse.Create(hScene);
+            manager = traverse.Field("hSceneManager").GetValue<HSceneManager>();
+
             if(manager != null && manager.Player != null)
                 player = manager.Player.ChaControl;
      
