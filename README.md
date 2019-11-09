@@ -11,4 +11,3 @@ During H, you can now change your clothes state, instead of being locked at the 
 
 **To-Do:**  
 * Add male coordinate card selection  
-* Add support for 3p  
