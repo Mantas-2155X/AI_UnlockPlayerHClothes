@@ -1,4 +1,3 @@
-using System;
 using HarmonyLib;
 
 using BepInEx;
@@ -12,12 +11,12 @@ using System.Reflection.Emit;
 using AIChara;
 using Manager;
 
-using JetBrains.Annotations;
-
 namespace AI_UnlockPlayerHClothes {
-    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), "1.3.0")]
+    [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_UnlockPlayerHClothes : BaseUnityPlugin
     {
+        public const string VERSION = "1.3.0";
+        
         private static HScene hScene;
         private static HSceneManager manager;
         
@@ -34,7 +33,7 @@ namespace AI_UnlockPlayerHClothes {
             return new ChaControl[4] { females[0], females[1], males[0], males[1] };
         }
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSprite), "OnClickMainCategories")][UsedImplicitly]
+        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSprite), "OnClickMainCategories")]
         public static IEnumerable<CodeInstruction> HSceneSprite_OnClickMainCategories_AllowMalesClothesCategory(IEnumerable<CodeInstruction> instructions)
         {
             var il = instructions.ToList();
@@ -49,7 +48,7 @@ namespace AI_UnlockPlayerHClothes {
            return il;
         }
         
-        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSpriteClothCondition), "Init")][UsedImplicitly]
+        [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSpriteClothCondition), "Init")]
         public static IEnumerable<CodeInstruction> HSceneSpriteClothCondition_Init_RedirectGetFemales(IEnumerable<CodeInstruction> instructions)
         {
             var il = instructions.ToList();
@@ -65,7 +64,7 @@ namespace AI_UnlockPlayerHClothes {
             return il;
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(HSceneSpriteClothCondition), "Init")][UsedImplicitly]
+        [HarmonyPrefix, HarmonyPatch(typeof(HSceneSpriteClothCondition), "Init")]
         public static void HSceneSpriteClothCondition_Init_IncreaseAllState(HSceneSpriteClothCondition __instance)
         {
             // Force "all clothes off/on" to int array of 4 instead of 2
@@ -73,7 +72,7 @@ namespace AI_UnlockPlayerHClothes {
             trav.Field("allState").SetValue(new int[4]);
         }
         
-        [HarmonyPostfix, HarmonyPatch(typeof(HScene), "SetStartVoice")][UsedImplicitly]
+        [HarmonyPostfix, HarmonyPatch(typeof(HScene), "SetStartVoice")]
         public static void HScene_SetStartVoice_ApplyClothesConfig(HScene __instance)
         {
             hScene = __instance;
@@ -92,7 +91,7 @@ namespace AI_UnlockPlayerHClothes {
             player.SetClothesState(7, (byte)(!hData.Shoes ? 2 : 0), true);
         }
         
-        [HarmonyTranspiler, HarmonyPatch(typeof(HScene), "LateUpdate")][UsedImplicitly]
+        [HarmonyTranspiler, HarmonyPatch(typeof(HScene), "LateUpdate")]
         public static IEnumerable<CodeInstruction> HScene_LateUpdate_RemoveClothesLock(IEnumerable<CodeInstruction> instructions)
         {
             var il = instructions.ToList();
