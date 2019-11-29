@@ -1,6 +1,7 @@
 using HarmonyLib;
 
 using BepInEx;
+using BepInEx.Logging;
 using BepInEx.Harmony;
 
 using System.Collections.Generic;
@@ -15,22 +16,37 @@ namespace AI_UnlockPlayerHClothes {
     [BepInPlugin(nameof(AI_UnlockPlayerHClothes), nameof(AI_UnlockPlayerHClothes), VERSION)][BepInProcess("AI-Syoujyo")]
     public class AI_UnlockPlayerHClothes : BaseUnityPlugin
     {
-        public const string VERSION = "1.3.0";
+        public const string VERSION = "1.3.1";
         
+        private new static ManualLogSource Logger;
+
         private static HScene hScene;
         private static HSceneManager manager;
         
         private static ChaControl player;
         private static readonly List<int> clothesKindList = new List<int>{0, 2, 1, 3, 5, 6};
-        
-        private void Awake() => HarmonyWrapper.PatchAll(typeof(AI_UnlockPlayerHClothes));
+
+        private void Awake()
+        {
+            Logger = base.Logger;
+
+            HarmonyWrapper.PatchAll(typeof(AI_UnlockPlayerHClothes));
+        }
 
         private static ChaControl[] newGetFemales()
         {
             var females = hScene.GetFemales();
             var males = hScene.GetMales();
 
-            return new ChaControl[4] { females[0], females[1], males[0], males[1] };
+            ChaControl[] newFemales = new ChaControl[females.Length + males.Length];
+
+            for (int i = 0; i < females.Length; i++)
+                newFemales[i] = females[i];
+            
+            for (int i = 0; i < males.Length; i++)
+                newFemales[i + females.Length] = males[i];
+
+            return newFemales;
         }
 
         [HarmonyTranspiler, HarmonyPatch(typeof(HSceneSprite), "OnClickMainCategories")]
@@ -40,7 +56,12 @@ namespace AI_UnlockPlayerHClothes {
             
             // Force show males selection in clothes category
             var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Call && (instruction.operand as MethodInfo)?.Name == "SetAnimationMenu");
-            if (index <= 0) return il;
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'HSceneSprite_OnClickMainCategories_AllowMalesClothesCategory' SetAnimationMenu index not found!");
+                Logger.LogWarning("Failed transpiling 'HSceneSprite_OnClickMainCategories_AllowMalesClothesCategory' SetAnimationMenu index not found!");
+                return il;
+            }
 
             il[index + 5].opcode = OpCodes.Ldc_I4_2;
             il[index + 6].opcode = OpCodes.Clt;
@@ -55,7 +76,12 @@ namespace AI_UnlockPlayerHClothes {
             
             // Force clothes category to put males in "females" array
             var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "GetFemales");
-            if (index <= 0) return il;
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'HSceneSpriteClothCondition_Init_RedirectGetFemales' GetFemales index not found!");
+                Logger.LogWarning("Failed transpiling 'HSceneSpriteClothCondition_Init_RedirectGetFemales' GetFemales index not found!");
+                return il;
+            }
 
             il[index - 2].opcode = OpCodes.Nop;
             il[index - 1].opcode = OpCodes.Nop;
@@ -98,7 +124,12 @@ namespace AI_UnlockPlayerHClothes {
             
             // Force 0 to the if statement, clothes state doesn't get forced anymore //
             var index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "IsClothesStateKind");
-            if (index <= 0) return il;
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'HScene_LateUpdate_RemoveClothesLock' IsClothesStateKind index not found!");
+                Logger.LogWarning("Failed transpiling 'HScene_LateUpdate_RemoveClothesLock' IsClothesStateKind index not found!");
+                return il;
+            }
 
             il[index - 5].opcode = OpCodes.Nop;
             il[index - 4].opcode = OpCodes.Nop;
@@ -108,7 +139,12 @@ namespace AI_UnlockPlayerHClothes {
             il[index].opcode = OpCodes.Ldc_I4_0;
             
             index = il.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && (instruction.operand as MethodInfo)?.Name == "SetAccessoryStateAll");
-            if (index <= 0) return il;
+            if (index <= 0)
+            {
+                Logger.LogMessage("Failed transpiling 'HScene_LateUpdate_RemoveClothesLock' SetAccessoryStateAll index not found!");
+                Logger.LogWarning("Failed transpiling 'HScene_LateUpdate_RemoveClothesLock' SetAccessoryStateAll index not found!");
+                return il;
+            }
             
             // Disable forcing accessory state //
             for (int i = 0; i < 7; i++)
