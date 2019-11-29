@@ -1,7 +1,7 @@
 # AI_UnlockPlayerHClothes  
 This plugin unlocks the players clothes forced state during H.  
 
-During H, you can now change your clothes state, instead of being locked at the setting in your configuration.
+During H, you can now change your players clothes state, instead of being locked at the setting in your configuration.
 
 **Download:**  
 * Download the latest `AI_UnlockPlayerHClothes.zip` from https://github.com/Mantas-2155X/AI_UnlockPlayerHClothes/releases  
